@@ -9,8 +9,8 @@ ASFLAGS =
 # If the makefile can't find QEMU, specify its path here
 QEMU = kvm
 
-bootblock: boot.S
-	$(AS) $(ASFLAGS) -f bin -o bootblock boot.S
+bootblock: bootblock.S
+	$(AS) $(ASFLAGS) -f bin -o bootblock bootblock.S
 	$(OBJDUMP) -D -b binary -mi386 bootblock > bootblock.asm
 
 ifndef CPUS

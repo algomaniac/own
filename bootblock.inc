@@ -2,19 +2,24 @@
 ; assembler macros to create x86 segments
 ;
 
-%define SEG_NULL                                             \
-        .word 0, 0;                                             \
-        .byte 0, 0, 0, 0
+%macro SEG_NULL  0                                           
+        dd 0                                         
+        dd 0
+%endmacro
 
 ; The 0xC0 means the limit is in 4096-byte units
 ; and (for executable segments) 32-bit mode.
 ; TODO : why is limit and base considered to have 
 ; different endian.
 
-%define SEG_DESC(base,lim,type)                                  \
-        .word (((lim) >> 12) & 0xffff), ((base) & 0xffff);      \
-        .byte (((base) >> 16) & 0xff), (0x90 | (type)),         \
-                (0xC0 | (((lim) >> 28) & 0xf)), (((base) >> 24) & 0xff)
+%macro SEG_DESC 3	;(base,lim,type)                                  
+        dw (((%2) >> 12) & 0xffff) 
+	dw ((%1) & 0xffff);      
+        db (((%1) >> 16) & 0xff)
+	db (0x90 | (%3))         
+        db (0xC0 | (((%2) >> 28) & 0xf)) 
+	db (((%1) >> 24) & 0xff)
+%endmacro
 
 %define STA_X     0x8       ; Executable segment
 %define STA_E     0x4       ; Expand down (non-executable segments)

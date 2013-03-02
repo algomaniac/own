@@ -1,4 +1,4 @@
-%include "asm.inc"
+%include "bootblock.inc"
 [BITS 16]	      ; Tell compliler that it's 16 bit
 [ORG 0x7C00]
 
@@ -87,21 +87,25 @@ main:
  ;switching from real to protected using bootstrap GDT
  ;which maps virtual address directly to physical so the 
  ;memory map do not change
- lgdt gdtdesc
- mov eax,cr0;
- or  eax,CR0_PE;
- mov cr0,eax;
- 
 
- ret
+ lgdt [gdtdesc]
+ mov eax,cr0
+ or  eax,CR0_PE
+ mov cr0,eax
+
+loop:
+	nop
+jmp loop
+
+ret
 
 gdt:
-	SEG_NULL	;null segment
-	SEG_DESC(0x0,0xffffffff,STA_R|STA_X) 	;code segment
-	SEG_DESC(0x0,0xffffffff,STA_W) 		;data segment
+	SEG_NULL				;null segment
+	SEG_DESC 0x0,0xffffffff,STA_R|STA_X 	;code segment
+	SEG_DESC 0x0,0xffffffff,STA_W 		;data segment
 gdtdesc:
-	.word (gdtdesc - gdt -1) 
-	.long gdt
+	dw (gdtdesc - gdt -1) 
+	dd gdt
 
 A20MSG db 'enabling A20',13,10,0
 HELLO db 'init stage0',13,10,0
