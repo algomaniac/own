@@ -1,7 +1,9 @@
+%include "macros.inc"
 %include "bootblock.inc"
-[BITS 16]	      ; Tell compliler that it's 16 bit
-[ORG 0x7C00]
-
+bits 16	      ; Tell compliler that it's 16 bit
+	      ; elf do not support org 0x7C00
+global main
+extern bootmain
 jmp main	;jump to main
 
 ;wait for input buffer clear
@@ -92,9 +94,37 @@ main:
  mov eax,cr0
  or  eax,CR0_PE
  mov cr0,eax
+ 
+ ;make along jump to reload cs and ip
+ ;below is same as 0x8:start32 , our code selector is at 8 bytes 
+ ;off [gdtdesc ]
+
+ ; SEG_KCODE<<3 = 0x8
+ jmp 08h:start32
+
+
+;*********************************************
+;	32bit world
+;*********************************************
+
+bits 32	
+start32:
+;setup protected mode data segment registers 
+;SEG_KDATA<<3 = 16 
+mov ax ,0x10
+mov ds,ax	;data
+mov es,ax	;extra
+mov ss,ax	;stack
+
+mov ax,0	;segments not ready for use
+mov fs,ax	;
+mov gs,ax	;
+
+mov esp,main  ;
+call bootmain ;
 
 loop:
-	nop
+   nop
 jmp loop
 
 ret

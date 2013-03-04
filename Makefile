@@ -10,13 +10,19 @@ ASFLAGS =
 QEMU = kvm
 
 bootblock: bootblock.S
-	$(AS) $(ASFLAGS) -f bin -o bootblock bootblock.S
-	$(OBJDUMP) -D -b binary -mi386 bootblock > bootblock.asm
+	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c main.c	
+	$(AS) $(ASFLAGS) -f elf -o bootblock.o bootblock.S
+	$(LD) $(LDFLAGS) -N -e main -Ttext 0x7C00 --oformat binary -o bootsector bootblock.o main.o
+	$(OBJDUMP) -D -b binary -mi386 bootsector > bootblock.asm
 
 ifndef CPUS
 CPUS := 2
 endif
-QEMUOPTS = -hdb bootblock -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -hdb bootsector -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
 qemu: bootblock
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+
+clean:
+	rm *.o
+	rm bootsector

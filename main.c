@@ -1,0 +1,5 @@
+
+void
+bootmain(void)
+{
+}
