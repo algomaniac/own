@@ -3,7 +3,7 @@ AS = nasm
 LD = ld
 OBJCOPY = objcopy
 OBJDUMP = objdump
-
+CFLAGS = -fno-pic -static -fno-builtin -fno-strict-aliasing -Wall -MD -ggdb -m32 -Werror -fno-omit-frame-pointer -fno-stack-protector
 ASFLAGS =
 
 # If the makefile can't find QEMU, specify its path here
@@ -12,8 +12,10 @@ QEMU = kvm
 bootblock: bootblock.S
 	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c main.c	
 	$(AS) $(ASFLAGS) -f elf -o bootblock.o bootblock.S
-	$(LD) $(LDFLAGS) -N -e main -Ttext 0x7C00 --oformat binary -o bootsector bootblock.o main.o
-	$(OBJDUMP) -D -b binary -mi386 bootsector > bootblock.asm
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00  -o bootsector.o bootblock.o main.o
+	$(OBJDUMP) -D -b binary -mi386 bootsector.o > bootblock.asm
+	$(OBJCOPY) -S -O binary -j .text bootsector.o bootsector
+	./sign.pl bootsector
 
 ifndef CPUS
 CPUS := 2
