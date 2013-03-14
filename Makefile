@@ -10,10 +10,9 @@ ASFLAGS =
 QEMU = kvm
 
 bootblock: bootblock.S
-	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c main.c	
+	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c	
 	$(AS) $(ASFLAGS) -f elf -o bootblock.o bootblock.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00  -o bootsector.o bootblock.o main.o
-	$(OBJDUMP) -D -b binary -mi386 bootsector.o > bootblock.asm
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00  -o bootsector.o bootblock.o bootmain.o
 	$(OBJCOPY) -S -O binary -j .text bootsector.o bootsector
 	./sign.pl bootsector
 
@@ -28,3 +27,4 @@ qemu: bootblock
 clean:
 	rm *.o
 	rm bootsector
+	rm *.d
