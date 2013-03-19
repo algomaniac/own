@@ -1,5 +1,9 @@
 #define ELF_MAGIC 0x464C457FU  // "\x7FELF" in little endian
 
+typedef unsigned int uint;
+typedef unsigned short ushort;
+typedef unsigned char uchar;
+
 // File header
 struct elfhdr {
   uint magic;  // must equal ELF_MAGIC
@@ -19,7 +23,7 @@ struct elfhdr {
   ushort shstrndx;
 };
 
-/ Program section header
+// Program section header
 struct proghdr {
   uint type;
   uint off;

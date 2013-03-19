@@ -28,11 +28,9 @@ CPUS := 2
 endif
 QEMUOPTS = -hdb own.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: own.img
+qemu: bootblock
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 clean:
 	rm *.o
-	rm *.d
 	rm bootsector
-	rm *.img
