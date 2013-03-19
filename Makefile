@@ -9,22 +9,30 @@ ASFLAGS =
 # If the makefile can't find QEMU, specify its path here
 QEMU = kvm
 
-bootblock: bootblock.S
-	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c main.c	
+own.img: bootblock
+	dd if=/dev/zero of=own.img count=10000
+	dd if=bootsector of=own.img conv=notrunc
+#	dd if=kernel of=own.img seek=1 conv=notrunc
+
+#kernel: kmain.c
+	
+bootblock: bootblock.S bootmain.c
+	$(CC) $(CFLAGS) -fno-pic -O -nostdinc -I. -c bootmain.c	
 	$(AS) $(ASFLAGS) -f elf -o bootblock.o bootblock.S
-	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00  -o bootsector.o bootblock.o main.o
-	$(OBJDUMP) -D -b binary -mi386 bootsector.o > bootblock.asm
+	$(LD) $(LDFLAGS) -N -e start -Ttext 0x7C00  -o bootsector.o bootblock.o bootmain.o	
 	$(OBJCOPY) -S -O binary -j .text bootsector.o bootsector
 	./sign.pl bootsector
 
 ifndef CPUS
 CPUS := 2
 endif
-QEMUOPTS = -hdb bootsector -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -hdb own.img -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: bootblock
+qemu: own.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 clean:
 	rm *.o
+	rm *.d
 	rm bootsector
+	rm *.img
